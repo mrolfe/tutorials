@@ -1,0 +1,265 @@
+---
+title: "Recoding Variables: Factors with level and label option"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE ,message=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = FALSE)
+library(sjlabelled)
+library(datasets)
+load("data/anes.rda")
+tutorial_options(exercise.timelimit = 10)
+```
+
+---
+##Creating a new variable
+To recode a variable, we create a new variable in the same dataset and assign some value based on the old variable to this new variable. In this example, the new variable *infertile* is simply assigned the value of the existing variable *case*.
+
+```{r factorintro, echo=TRUE}
+#this creates a temporary dataset called test
+test<-infert
+#this is the recoding command
+test$infertile<-test$case
+#inspect both variables and compare
+table(test$case)
+table(test$infertile)
+```
+
+###Exercise 1
+Try creating a new variable called *gender* in the anes dataset from the existing variable *VCF0104*. You can use the *table* command to inspect both the original and recoded variable.
+```{r factorintro1, exercise=TRUE, exercise.lines=4}
+#recoding command
+
+#inspect both variables and compare
+
+```
+
+```{r factorintro1-solution}
+#recoding command
+anes$gender<-anes$VCF0104
+#inspect both variables and compare
+table(anes$gender)
+table(anes$VCF0104)
+```
+
+##Recoding into a Factor with Labels
+
+Sometimes, we have a variable with numeric values that correspond to value labels. In this case, we have a collection of fruit coded 1,2 or 3, where 1="Red Apple", 2="Orange", and 3="Green Apple". We recode the numeric variable *fruit* into a new factor variable *fruitf* with the correct value labels, provided in the order of the numeric values.
+
+```{r fruit1, echo=TRUE}
+##This is the original variable
+fruit<-c(1,3,2,1,2)
+table(fruit)
+##Recode into new factor variable with labels
+fruitf<-factor(fruit, labels=c("Red Apple", "Orange", "Green Apple"))
+```
+ 
+###Exercise 2
+Try creating a new variable called *gender* in the anes dataset from the existing variable *VCF0104*, similar to which you did in the previous exercise. This time, create a new factor variable and assign the value labels 1="Male" and 2="Female". You can use the *table* command to inspect both the original and recoded variable.
+
+```{r factorintro2, exercise=TRUE, exercise.lines=4}
+#recode into new factor variable with labels
+
+#inspect both variables and compare
+
+```
+
+```{r factorintro2-solution}
+#recode into new factor variable with labels
+anes$gender<-factor(anes$VCF0104, labels=c("Male","Female"))
+#inspect both variables and compare
+table(anes$gender)
+table(anes$VCF0104)
+```
+
+##Treating a numeric value as missing
+Sometimes, variables include numeric values that should be treated as missing data. For example, the numeric value 9 may correspond to the value "DK". When a variable is numeric, it takes two steps to recode our *fruit* variable into the new variable, *fruitNA*, and then declare the chosen values as missing.
+
+```{r fruit2, echo=TRUE}
+##This is the original variable
+fruit<-c(1,3,2,9,1,2)
+table(fruit)
+##recode into a new variable
+fruitNA<-fruit
+##assign NA to the correct subset of the new variable
+fruitNA[fruit==9]<-NA
+```
+
+```{r spendmil, echo=TRUE}
+table(anes$VCF0828)
+table(as_label(anes$VCF0828))
+```
+
+###Exercise 3
+The variable *VCF0828*, support for military spending, has three numeric values: 1="Cut..." and 2="Continue...", and 9="DK...". Create a new numeric variable, *spendmilNA*, which treats the value 9 as missing data.
+
+```{r factorintro3, exercise=TRUE, exercise.lines=6}
+##recode into a new variable
+
+##assign NA to the correct subset of the new variable
+
+#inspect both variables and compare
+
+```
+
+```{r factorintro3-solution}
+#recode into new factor variable with labels
+anes$spendmilNA<-anes$VCF0828
+##assign NA to the correct subset of the new variable
+anes$spendmilNA[anes$VCF0828==9]<-NA
+#inspect both variables and compare
+table(anes$VCF0828)
+table(anes$spendmilNA)
+```
+
+##Treating a factor level as missing
+
+Sometimes, we have a factor level that we would like to treat as missing data. We cannot simply use the subset and NA assignment as with numeric variables. Instead, the level must be diretly omitted from the factor command. Here is an example
+
+```{r fruit3, echo=TRUE}
+#this is the initial numeric variable
+fruit<-c(1,3,2,1,9,2)
+#this is the recoded factor variable
+fruitf<-factor(fruit, labels=c("Red Apple", "Orange", "Green Apple","DK"))
+table(fruitf)
+#recode and drop level "DK"
+fruitA<-factor(fruitf, levels=c("Red Apple", "Orange", "Green Apple"))
+table(fruitA)
+```
+
+The variable *spendmil* in the anes dataset is the same as *VCF0828*, but it is saved as a factor variable.
+```{r spendmil2, echo=TRUE}
+table(anes$spendmil)
+```
+
+###Exercise 4
+Create a new variable, *spendmilNA*, that treats the factor level "DK/Ambivalent" as missing data.
+```{r factorintro4, exercise=TRUE, exercise.lines=4}
+#recode and drop level "DK"
+
+#inspect new variable and compare
+
+```
+
+```{r factorintro4-solution}
+#recode and drop level "DK"
+anes$spendmilNA<-factor(anes$spendmil, levels=c("Cut", "Continue"))
+#inspect new variable and compare
+table(anes$spendmilNA)
+```
+
+##Reordering factor levels
+
+The *levels* option of the factor() command can also be used to reorder the levels in an existing factor. 
+
+```{r fruitfac}
+fruit<-c(1,3,2,1,2)
+fruitf<-factor(fruit, labels=c("Red Apple", "Orange", 
+"Green Apple"))
+```
+
+```{r fruit4, echo=TRUE, exercise.setup="fruitfac"}
+table(fruitf)
+#reorder the levels alphabetically
+fruitB<-factor(fruitf, levels=c("Green Apple","Orange","Red Apple"))
+table(fruitB)
+```
+
+###Exercise 5
+Try combining two steps in a single level command. Create a new variable, *milCut*, from the existing variable *spendmil*. In your recode, drop the "DK" level AND reorder the levels alphabetically.
+
+```{r factorintro5, exercise=TRUE, exercise.lines=4}
+#recode: drop level "DK" and reorder levels alphabetically
+
+#inspect new variable and compare
+
+```
+
+```{r factorintro5-solution}
+#recode: drop level "DK" and reorder levels alphabetically
+anes$milCut<-factor(anes$spendmil, levels=c("Continue","Cut"))
+#inspect new variable and compare
+table(anes$milCut)
+```
+
+##Collapsing numeric values into a binary variable
+
+Sometimes, we may want to distinguish one or more values of a variable from all other values of that variable. In other words, we want to change an ordinal, interval, ratio or even categorical variable into a single binary indicator. 
+
+Return to the example of a collection of fruit coded 1,2, 3 or 9, where 1="Red Apple", 2="Orange", 3="Green Apple" and 9 "DK". All we care about is whether or not the fruit can confidently be called an Orange, so there is no need to omit the diffiult to name fruit. Therefore, we recode into a new variable using a logical test to distinguish oranges from non-oranges. The resulting variable is a *logical* variable with values of TRUE if the fruit is an orange or FALSE if the fruit is not an orange. Note that even though the original variable included an NA, using the equality operator left the NA values as missing data. 
+
+```{r fruit5, echo=TRUE}
+fruit<-c(1,3,2,NA,1,9,2)
+#recode using logical test
+orange<-fruit==2
+table(orange)
+```
+
+###Exercise 6A
+Create a new variable, *milCut*, from the existing variable *VCF00824*. In your recode, distinguish "Cut..." responses from all other valid responses (e.g., "Continue..." and "DK..."). Recall that VCF0824 has three numeric values:  1="Cut..." and 2="Continue...", and 9="DK...".
+
+```{r factorintro6, exercise=TRUE, exercise.lines=4}
+#recode using logical test
+
+#inspect new variable and compare
+
+```
+
+```{r factorintro6-solution}
+#recode using logical test
+anes$milCut<-anes$VCF0828==1
+#inspect new variable and compare
+table(anes$milCut)
+```
+
+###Collapse multiple numeric values
+Suppose instead we want to distinguish all fruit that can confidently be called an apple (regardless of color), from other fruit. We can use a slightly different logical operator to test for more than one numeric value. 
+```{r fruit5b, echo=TRUE}
+fruit<-c(1,3,2,NA,1,9,2)
+#recode using logical test
+apple<-fruit%in%c(1,3)
+table(apple)
+```
+*Note* The function "c" also accepts numerical sequences (e.g., c(1:10, 15)).
+
+##Collapsing factor levels into a binary variable
+
+Sometimes, we may need to collapse values in a variable that is already set up as a factor. In this case, we can use the levels() command to assign new levels to the factor variable. 
+
+```{r fruit6, echo=TRUE, exercise.setup="fruitfac"}
+#create a new variable for recoding
+fruitA<-fruitf
+#recode and collapse using levels
+levels(fruitA)<-list(Apple=c("Red Apple","Green Apple"),Orange=c("Orange"))
+table(fruitA)
+```
+
+###Exercise 7
+Once again, create a new variable, *milCut*, but this time from the existing factor variable *spendmil*. In your recode, distinguish "Cut..." responses from all other valid responses (e.g., "Continue..." and "DK..."). For ease of reference, here are the levels of the spendmil variable.
+
+```{r millevels, echo=TRUE}
+levels(anes$spendmil)
+```
+
+```{r factorintro7, exercise=TRUE, exercise.lines=6}
+#create a new variable for recoding
+
+#recode and collapse using levels
+
+#inspect new variable and compare
+
+```
+
+```{r factorintro7-solution}
+#create a new variable for recoding
+anes$milCut<-anes$spendmil
+#recode and collapse using levels
+levels(anes$milCut)=list(Cut=c("Cut"),NoCut=c("Continue", "DK/Ambivalent"))
+#inspect new variable and compare
+```
+
+
+
+

@@ -1,0 +1,12 @@
+name: helpHW3
+title: helpHW3
+username:
+account: umass-rolfe
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 564810
+bundleId: 1695081
+url: https://umass-rolfe.shinyapps.io/helpHW3/
+when: 1541982754.47734
+asMultiple: FALSE
+asStatic: FALSE

@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+<meta name="progressive" content="false" />
+<meta name="allow-skip" content="false" />
+
+<title>Recoding Variables: Factors with level and label option</title>
+
+
+<!-- highlightjs -->
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+</head>
+
+<body>
+
+
+
+<div class="pageContent band">
+<div class="bandContent page">
+
+<div class="topics">
+
+<hr />
+<div id="section-creating-a-new-variable" class="section level2">
+<h2>Creating a new variable</h2>
+<p>To recode a variable, we create a new variable in the same dataset and assign some value based on the old variable to this new variable. In this example, the new variable <em>infertile</em> is simply assigned the value of the existing variable <em>case</em>.</p>
+<pre class="r"><code>#this creates a temporary dataset called test
+test&lt;-infert
+#this is the recoding command
+test$infertile&lt;-test$case
+#inspect both variables and compare
+table(test$case)</code></pre>
+<pre><code>## 
+##   0   1 
+## 165  83</code></pre>
+<pre class="r"><code>table(test$infertile)</code></pre>
+<pre><code>## 
+##   0   1 
+## 165  83</code></pre>
+<div id="section-exercise-1" class="section level3">
+<h3>Exercise 1</h3>
+Try creating a new variable called <em>gender</em> in the anes dataset from the existing variable <em>VCF0104</em>. You can use the <em>table</em> command to inspect both the original and recoded variable.
+<div class="tutorial-exercise" data-label="factorintro1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="4">
+<pre class="text"><code>#recoding command
+
+#inspect both variables and compare</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.timelimit":10,"exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="factorintro1-solution" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#recoding command
+anes$gender&lt;-anes$VCF0104
+#inspect both variables and compare
+table(anes$gender)
+table(anes$VCF0104)</code></pre>
+</div>
+</div>
+</div>
+<div id="section-recoding-into-a-factor-with-labels" class="section level2">
+<h2>Recoding into a Factor with Labels</h2>
+<p>Sometimes, we have a variable with numeric values that correspond to value labels. In this case, we have a collection of fruit coded 1,2 or 3, where 1=“Red Apple”, 2=“Orange”, and 3=“Green Apple”. We recode the numeric variable <em>fruit</em> into a new factor variable <em>fruitf</em> with the correct value labels, provided in the order of the numeric values.</p>
+<pre class="r"><code>##This is the original variable
+fruit&lt;-c(1,3,2,1,2)
+table(fruit)</code></pre>
+<pre><code>## fruit
+## 1 2 3 
+## 2 2 1</code></pre>
+<pre class="r"><code>##Recode into new factor variable with labels
+fruitf&lt;-factor(fruit, labels=c(&quot;Red Apple&quot;, &quot;Orange&quot;, &quot;Green Apple&quot;))</code></pre>
+<div id="section-exercise-2" class="section level3">
+<h3>Exercise 2</h3>
+<p>Try creating a new variable called <em>gender</em> in the anes dataset from the existing variable <em>VCF0104</em>, similar to which you did in the previous exercise. This time, create a new factor variable and assign the value labels 1=“Male” and 2=“Female”. You can use the <em>table</em> command to inspect both the original and recoded variable.</p>
+<div class="tutorial-exercise" data-label="factorintro2" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="4">
+<pre class="text"><code>#recode into new factor variable with labels
+
+#inspect both variables and compare</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.timelimit":10,"exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="factorintro2-solution" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#recode into new factor variable with labels
+anes$gender&lt;-factor(anes$VCF0104, labels=c(&quot;Male&quot;,&quot;Female&quot;))
+#inspect both variables and compare
+table(anes$gender)
+table(anes$VCF0104)</code></pre>
+</div>
+</div>
+</div>
+<div id="section-treating-a-numeric-value-as-missing" class="section level2">
+<h2>Treating a numeric value as missing</h2>
+<p>Sometimes, variables include numeric values that should be treated as missing data. For example, the numeric value 9 may correspond to the value “DK”. When a variable is numeric, it takes two steps to recode our <em>fruit</em> variable into the new variable, <em>fruitNA</em>, and then declare the chosen values as missing.</p>
+<pre class="r"><code>##This is the original variable
+fruit&lt;-c(1,3,2,9,1,2)
+table(fruit)</code></pre>
+<pre><code>## fruit
+## 1 2 3 9 
+## 2 2 1 1</code></pre>
+<pre class="r"><code>##recode into a new variable
+fruitNA&lt;-fruit
+##assign NA to the correct subset of the new variable
+fruitNA[fruit==9]&lt;-NA</code></pre>
+<pre class="r"><code>table(anes$VCF0828)</code></pre>
+<pre><code>## 
+##    1    2    9 
+##  797 2374  230</code></pre>
+<pre class="r"><code>table(as_label(anes$VCF0828))</code></pre>
+<pre><code>## 
+##             NA;no post IW;form II,IV (1972) 
+##                                           0 
+##                       Cut military spending 
+##                                         797 
+## Continue spending at least at present level 
+##                                        2374 
+##                    DK;depends;pro-con;other 
+##                                         230</code></pre>
+<div id="section-exercise-3" class="section level3">
+<h3>Exercise 3</h3>
+<p>The variable <em>VCF0828</em>, support for military spending, has three numeric values: 1=“Cut…” and 2=“Continue…”, and 9=“DK…”. Create a new numeric variable, <em>spendmilNA</em>, which treats the value 9 as missing data.</p>
+<div class="tutorial-exercise" data-label="factorintro3" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="6">
+<pre class="text"><code>##recode into a new variable
+
+##assign NA to the correct subset of the new variable
+
+#inspect both variables and compare</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.timelimit":10,"exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="factorintro3-solution" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#recode into new factor variable with labels
+anes$spendmilNA&lt;-anes$VCF0828
+##assign NA to the correct subset of the new variable
+anes$spendmilNA[anes$VCF0828==9]&lt;-NA
+#inspect both variables and compare
+table(anes$VCF0828)
+table(anes$spendmilNA)</code></pre>
+</div>
+</div>
+</div>
+<div id="section-treating-a-factor-level-as-missing" class="section level2">
+<h2>Treating a factor level as missing</h2>
+<p>Sometimes, we have a factor level that we would like to treat as missing data. We cannot simply use the subset and NA assignment as with numeric variables. Instead, the level must be diretly omitted from the factor command. Here is an example</p>
+<pre class="r"><code>#this is the initial numeric variable
+fruit&lt;-c(1,3,2,1,9,2)
+#this is the recoded factor variable
+fruitf&lt;-factor(fruit, labels=c(&quot;Red Apple&quot;, &quot;Orange&quot;, &quot;Green Apple&quot;,&quot;DK&quot;))
+table(fruitf)</code></pre>
+<pre><code>## fruitf
+##   Red Apple      Orange Green Apple          DK 
+##           2           2           1           1</code></pre>
+<pre class="r"><code>#recode and drop level &quot;DK&quot;
+fruitA&lt;-factor(fruitf, levels=c(&quot;Red Apple&quot;, &quot;Orange&quot;, &quot;Green Apple&quot;))
+table(fruitA)</code></pre>
+<pre><code>## fruitA
+##   Red Apple      Orange Green Apple 
+##           2           2           1</code></pre>
+<p>The variable <em>spendmil</em> in the anes dataset is the same as <em>VCF0828</em>, but it is saved as a factor variable.</p>
+<pre class="r"><code>table(anes$spendmil)</code></pre>
+<pre><code>## 
+##           Cut      Continue DK/ambivalent 
+##           797          2374           230</code></pre>
+<div id="section-exercise-4" class="section level3">
+<h3>Exercise 4</h3>
+Create a new variable, <em>spendmilNA</em>, that treats the factor level “DK/Ambivalent” as missing data.
+<div class="tutorial-exercise" data-label="factorintro4" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="4">
+<pre class="text"><code>#recode and drop level &quot;DK&quot;
+
+#inspect new variable and compare</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.timelimit":10,"exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="factorintro4-solution" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#recode and drop level &quot;DK&quot;
+anes$spendmilNA&lt;-factor(anes$spendmil, levels=c(&quot;Cut&quot;, &quot;Continue&quot;))
+#inspect new variable and compare
+table(anes$spendmilNA)</code></pre>
+</div>
+</div>
+</div>
+<div id="section-reordering-factor-levels" class="section level2">
+<h2>Reordering factor levels</h2>
+<p>The <em>levels</em> option of the factor() command can also be used to reorder the levels in an existing factor.</p>
+<div class="tutorial-exercise-support" data-label="fruitfac" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>fruit&lt;-c(1,3,2,1,2)
+fruitf&lt;-factor(fruit, labels=c(&quot;Red Apple&quot;, &quot;Orange&quot;, 
+&quot;Green Apple&quot;))</code></pre>
+</div>
+<pre class="r"><code>table(fruitf)</code></pre>
+<pre><code>## fruitf
+##   Red Apple      Orange Green Apple          DK 
+##           2           2           1           1</code></pre>
+<pre class="r"><code>#reorder the levels alphabetically
+fruitB&lt;-factor(fruitf, levels=c(&quot;Green Apple&quot;,&quot;Orange&quot;,&quot;Red Apple&quot;))
+table(fruitB)</code></pre>
+<pre><code>## fruitB
+## Green Apple      Orange   Red Apple 
+##           1           2           2</code></pre>
+<div id="section-exercise-5" class="section level3">
+<h3>Exercise 5</h3>
+<p>Try combining two steps in a single level command. Create a new variable, <em>milCut</em>, from the existing variable <em>spendmil</em>. In your recode, drop the “DK” level AND reorder the levels alphabetically.</p>
+<div class="tutorial-exercise" data-label="factorintro5" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="4">
+<pre class="text"><code>#recode: drop level &quot;DK&quot; and reorder levels alphabetically
+
+#inspect new variable and compare</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.timelimit":10,"exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="factorintro5-solution" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#recode: drop level &quot;DK&quot; and reorder levels alphabetically
+anes$milCut&lt;-factor(anes$spendmil, levels=c(&quot;Continue&quot;,&quot;Cut&quot;))
+#inspect new variable and compare
+table(anes$milCut)</code></pre>
+</div>
+</div>
+</div>
+<div id="section-collapsing-numeric-values-into-a-binary-variable" class="section level2">
+<h2>Collapsing numeric values into a binary variable</h2>
+<p>Sometimes, we may want to distinguish one or more values of a variable from all other values of that variable. In other words, we want to change an ordinal, interval, ratio or even categorical variable into a single binary indicator.</p>
+<p>Return to the example of a collection of fruit coded 1,2, 3 or 9, where 1=“Red Apple”, 2=“Orange”, 3=“Green Apple” and 9 “DK”. All we care about is whether or not the fruit can confidently be called an Orange, so there is no need to omit the diffiult to name fruit. Therefore, we recode into a new variable using a logical test to distinguish oranges from non-oranges. The resulting variable is a <em>logical</em> variable with values of TRUE if the fruit is an orange or FALSE if the fruit is not an orange. Note that even though the original variable included an NA, using the equality operator left the NA values as missing data.</p>
+<pre class="r"><code>fruit&lt;-c(1,3,2,NA,1,9,2)
+#recode using logical test
+orange&lt;-fruit==2
+table(orange)</code></pre>
+<pre><code>## orange
+## FALSE  TRUE 
+##     4     2</code></pre>
+<div id="section-exercise-6a" class="section level3">
+<h3>Exercise 6A</h3>
+<p>Create a new variable, <em>milCut</em>, from the existing variable <em>VCF00824</em>. In your recode, distinguish “Cut…” responses from all other valid responses (e.g., “Continue…” and “DK…”). Recall that VCF0824 has three numeric values: 1=“Cut…” and 2=“Continue…”, and 9=“DK…”.</p>
+<div class="tutorial-exercise" data-label="factorintro6" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="4">
+<pre class="text"><code>#recode using logical test
+
+#inspect new variable and compare</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.timelimit":10,"exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="factorintro6-solution" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#recode using logical test
+anes$milCut&lt;-anes$VCF0828==1
+#inspect new variable and compare
+table(anes$milCut)</code></pre>
+</div>
+</div>
+<div id="section-collapse-multiple-numeric-values" class="section level3">
+<h3>Collapse multiple numeric values</h3>
+<p>Suppose instead we want to distinguish all fruit that can confidently be called an apple (regardless of color), from other fruit. We can use a slightly different logical operator to test for more than one numeric value.</p>
+<pre class="r"><code>fruit&lt;-c(1,3,2,NA,1,9,2)
+#recode using logical test
+apple&lt;-fruit%in%c(1,3)
+table(apple)</code></pre>
+<pre><code>## apple
+## FALSE  TRUE 
+##     4     3</code></pre>
+<p><em>Note</em> The function “c” also accepts numerical sequences (e.g., c(1:10, 15)).</p>
+</div>
+</div>
+<div id="section-collapsing-factor-levels-into-a-binary-variable" class="section level2">
+<h2>Collapsing factor levels into a binary variable</h2>
+<p>Sometimes, we may need to collapse values in a variable that is already set up as a factor. In this case, we can use the levels() command to assign new levels to the factor variable.</p>
+<pre class="r"><code>#create a new variable for recoding
+fruitA&lt;-fruitf
+#recode and collapse using levels
+levels(fruitA)&lt;-list(Apple=c(&quot;Red Apple&quot;,&quot;Green Apple&quot;),Orange=c(&quot;Orange&quot;))
+table(fruitA)</code></pre>
+<pre><code>## fruitA
+##  Apple Orange 
+##      3      2</code></pre>
+<div id="section-exercise-7" class="section level3">
+<h3>Exercise 7</h3>
+<p>Once again, create a new variable, <em>milCut</em>, but this time from the existing factor variable <em>spendmil</em>. In your recode, distinguish “Cut…” responses from all other valid responses (e.g., “Continue…” and “DK…”). For ease of reference, here are the levels of the spendmil variable.</p>
+<pre class="r"><code>levels(anes$spendmil)</code></pre>
+<pre><code>## [1] &quot;Cut&quot;           &quot;Continue&quot;      &quot;DK/ambivalent&quot;</code></pre>
+<div class="tutorial-exercise" data-label="factorintro7" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="6">
+<pre class="text"><code>#create a new variable for recoding
+
+#recode and collapse using levels
+
+#inspect new variable and compare</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.timelimit":10,"exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="factorintro7-solution" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#create a new variable for recoding
+anes$milCut&lt;-anes$spendmil
+#recode and collapse using levels
+levels(anes$milCut)=list(Cut=c(&quot;Cut&quot;),NoCut=c(&quot;Continue&quot;, &quot;DK/Ambivalent&quot;))
+#inspect new variable and compare</code></pre>
+</div>
+
+<script type="application/shiny-prerendered" data-context="server-start">
+library(learnr)
+knitr::opts_chunk$set(echo = FALSE)
+library(sjlabelled)
+library(datasets)
+load("data/anes.rda")
+tutorial_options(exercise.timelimit = 10)
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+learnr:::register_http_handlers(session, metadata = NULL)
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-factorintro1-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-factorintro1-code-editor`)), session)
+output$`tutorial-exercise-factorintro1-output` <- renderUI({
+  `tutorial-exercise-factorintro1-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-factorintro2-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-factorintro2-code-editor`)), session)
+output$`tutorial-exercise-factorintro2-output` <- renderUI({
+  `tutorial-exercise-factorintro2-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-factorintro3-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-factorintro3-code-editor`)), session)
+output$`tutorial-exercise-factorintro3-output` <- renderUI({
+  `tutorial-exercise-factorintro3-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-factorintro4-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-factorintro4-code-editor`)), session)
+output$`tutorial-exercise-factorintro4-output` <- renderUI({
+  `tutorial-exercise-factorintro4-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-factorintro5-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-factorintro5-code-editor`)), session)
+output$`tutorial-exercise-factorintro5-output` <- renderUI({
+  `tutorial-exercise-factorintro5-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-factorintro6-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-factorintro6-code-editor`)), session)
+output$`tutorial-exercise-factorintro6-output` <- renderUI({
+  `tutorial-exercise-factorintro6-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-factorintro7-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-factorintro7-code-editor`)), session)
+output$`tutorial-exercise-factorintro7-output` <- renderUI({
+  `tutorial-exercise-factorintro7-result`()
+})
+</script>
+ <!--html_preserve-->
+<script type="application/shiny-prerendered" data-context="dependencies">
+{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["1.11.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/jquery-1.11.3"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["bootstrap"]},{"type":"character","attributes":{},"value":["3.3.5"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/bootstrap-3.3.5"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["viewport"]}},"value":[{"type":"character","attributes":{},"value":["width=device-width, initial-scale=1"]}]},{"type":"character","attributes":{},"value":["js/bootstrap.min.js","shim/html5shiv.min.js","shim/respond.min.js"]},{"type":"character","attributes":{},"value":["css/cerulean.min.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["pagedtable"]},{"type":"character","attributes":{},"value":["1.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/pagedtable-1.1"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["js/pagedtable.js"]},{"type":"character","attributes":{},"value":["css/pagedtable.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["highlightjs"]},{"type":"character","attributes":{},"value":["9.12.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/highlightjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["highlight.js"]},{"type":"character","attributes":{},"value":["textmate.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial"]},{"type":"character","attributes":{},"value":["0.9.2.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial.js"]},{"type":"character","attributes":{},"value":["tutorial.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-autocompletion"]},{"type":"character","attributes":{},"value":["0.9.2.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-autocompletion.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-diagnostics"]},{"type":"character","attributes":{},"value":["0.9.2.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-diagnostics.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-format"]},{"type":"character","attributes":{},"value":["0.9.2.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmarkdown/templates/tutorial/resources"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-format.js"]},{"type":"character","attributes":{},"value":["tutorial-format.css","rstudio-theme.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["1.11.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/jquery-1.11.3"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["font-awesome"]},{"type":"character","attributes":{},"value":["5.0.13"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/fontawesome"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["js/fontawesome-all.min.js","js/fa-v4-shims.min.js"]},{"type":"character","attributes":{},"value":["css/fa-svg-with-js.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["bootbox"]},{"type":"character","attributes":{},"value":["4.4.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/bootbox"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["bootbox.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["localforage"]},{"type":"character","attributes":{},"value":["1.5"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/localforage"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["localforage.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial"]},{"type":"character","attributes":{},"value":["0.9.2.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial.js"]},{"type":"character","attributes":{},"value":["tutorial.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-autocompletion"]},{"type":"character","attributes":{},"value":["0.9.2.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-autocompletion.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-diagnostics"]},{"type":"character","attributes":{},"value":["0.9.2.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-diagnostics.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]}]}]}
+</script>
+<!--/html_preserve-->
+</div>
+</div>
+
+</div> <!-- topics -->
+
+<div class="topicsContainer">
+<div class="topicsPositioner">
+<div class="band">
+<div class="bandContent topicsListContainer">
+
+<!-- begin doc-metadata -->
+<div id="doc-metadata">
+<h2 class="title toc-ignore" style="display:none;">Recoding Variables: Factors with level and label option</h2>
+</div>
+<!-- end doc-metadata -->
+
+</div> <!-- bandContent.topicsListContainer -->
+</div> <!-- band -->
+</div> <!-- topicsPositioner -->
+</div> <!-- topicsContainer -->
+
+
+</div> <!-- bandContent page -->
+</div> <!-- pageContent band -->
+
+
+
+
+<script>
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+</script>
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+
+</html>

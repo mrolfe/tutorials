@@ -1,0 +1,649 @@
+---
+title: "R Support for Stats HW 3 for PS328/750"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE ,message=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = FALSE)
+library(sjlabelled)
+load("anes.rda")
+tutorial_options(exercise.timelimit = 10)
+```
+
+## Introducing the Dataset
+
+The package includes data that was originally provided in the .dta (Stata format). The *anes* dataset has been automatically loaded to be available for this session.
+
+```{r quiz1}
+quiz(
+  question("Which package can be used to read in Stata files that end in .dta?",
+    answer("read.csv"),
+    answer("stata"),
+    answer("haven", correct = TRUE),
+    answer("ggplot2")
+  )
+)
+```
+
+When R reads in a stata file, variables with value labels are read in as numeric variables but value labels are retained and are accesible. The package *sjlabelled* allows us to view the value labels, and has been automatically loaded for this session.
+
+###Exercise
+Retrieve the variable (column) names of the *anes* dataset.
+
+```{r colnames,exercise=TRUE}
+
+```
+
+```{r colnames-hint-1}
+#colnames()
+```
+
+```{r colnames-hint-2}
+colnames(anes)
+```
+
+##Military Support q1-12
+###Recoding Military Spending (VCF0828))
+
+The first variable we will look at is support for military spending, VCF0828. 
+
+```{r spendmil, echo=TRUE}
+table(anes$VCF0828)
+table(as_label(anes$VCF0828))
+```
+
+```{r quiz2}
+quiz(
+  question("For variable VCF0828, which value label belongs to the value of 2?",
+    answer("NA; no post IW..."),
+    answer("Cut military spending"),
+    answer("Continue spending...at present level", correct = TRUE),
+    answer("DK;depends;pro-con;other")
+  )
+)
+```
+
+There are three distinct ways to deal with the strange category including "DK, depends, pro/con" responses. First, eliminate all DK responses in this category and treat them as missing data. Second, treat as ordinal measure and reorder so that the DK category is in the middle. Third, treat as categorical measure and create a new variable distinguishing "continue" from all other categories. Therefore, we want to create three recodings for variable VCF0828: milspendA, milspendB, and milspendC. 
+
+###Exercise: Create generic milspend variable
+The original variable *VCF0028* is numeric, so recode into a new variable, *milspend*, with short factor labels.
+
+```{r spendmilgen, exercise=TRUE,exercise.lines=4}
+##Recode into new factor variable with labels
+
+#inspect variable and compare
+
+```
+
+```{r spendmilgen-hint-1}
+#Be sure to use the "labels" option to assign a character vector of labels to the numbers 1, 2 and 9.
+#See "Recoding Factors" Exercise 2 
+```
+
+```{r spendmilgen-hint-2}
+##Recode into new factor variable with labels
+anes$milspend<-factor(anes$VCF0828, labels=c("Cut", "Continue", "DK/ambivalent"))
+#inspect variable and compare
+table(anes$milspend)
+```
+
+###Exercise: Military Spending, Option A
+
+Try recoding the factor variable *spendmil* into a new variable *spendmilA* which treats all "DK/Ambivalent" responses as missing data. Include a *table* command to be sure your recode worked as expected.
+
+```{r spendmil3, exercise=TRUE, exercise.lines=4}
+#recode and drop level "DK"
+
+#inspect variable and compare
+
+```
+
+```{r spendmil3-hint-1}
+#See "Recoding Factors" Exercise 4
+```
+
+```{r spendmil3-hint-2}
+#recode and drop level "DK"
+anes$spendmilA<-factor(anes$milspend, levels=c("Cut","Continue"))
+#inspect variable and compare
+table(anes$spendmilA)
+```
+
+###Exercise: Military Spending, Option B
+
+Reorder the levels of *spendmil* to create a new ordinal factor called *spendmilB* with the DK category in the middle.
+
+```{r spendmil4, exercise=TRUE, exercise.lines=4}
+##reorder the levels correctly
+
+#inspect variable and compare
+
+```
+
+```{r spendmil4-hint-1}
+#See "Recoding Factors" Exercise 5
+```
+
+```{r spendmil4-hint-2}
+#levels("Cut", "DK/Ambivalent","Continue")
+```
+
+```{r spendmil4-hint-3}
+##reorder the levels correctly
+anes$spendmilB<-factor(anes$milspend, levels=c("Cut","DK/Ambivalent", "Continue"))
+#inspect variable and compare
+table(anes$spendmilB)
+```
+
+###Exercise: Military Spending, Option C
+Create a new variable, *spendmilC*, which distinguishes "continue" from all other categories.
+
+```{r spendmil5, exercise=TRUE, exercise.lines=6}
+#create a new variable for recoding
+
+#recode and collapse using levels
+
+#inspect new variable and compare
+
+```
+
+```{r spendmil5-hint-1}
+#see RecodingFactors tutorial, Exercise 7
+```
+
+```{r spendmil5-hint-2}
+#create a new variable for recoding
+anes$spendmilC<-anes$milspend
+#recode and collapse using levels
+levels(anes$spendmilC)<-list(CutDK=c("Cut","DK/ambivalent"),Continue=c("Continue"))
+#inspect new variable and compare
+table(anes$spendmilC)
+```
+
+##Military Spending and Gender, Question 4-6
+
+This series of questions asks about gender differences in attitudes towards military spending. 
+
+Therefore, a *gender* variable that is clearly categorical (not numeric) needs to be created. If the variable has clear value labels, it will be easier to interpret the results of statistical tests. Create the *gender* variable.
+
+###Exercise: Create *gender* variable
+
+```{r male, exercise=TRUE, exercise.lines=4}
+##Recode into new factor variable with labels
+
+#inspect variable and compare
+
+```
+
+```{r male-hint-1}
+#check the codebook for value labels
+#or try the following
+table(as_label(anes$VCF0104))
+```
+
+```{r male-hint-2}
+#see RecodingFactors tutorial, Exercise 2
+```
+
+```{r male-hint-3}
+anes$gender<-factor(anes$VCF0104, label=c("Male","Female"))
+table(anes$gender)
+```
+
+###Exercise: Test using Option A
+Is there a gender difference in support for military spending if we use *anes$spendmilA*, the option which treats all DK responses as missing (leaving only "Cut" and "Continue".) Use the correct bivariate test to check.
+
+```{r testmilspendA, exercise=TRUE}
+
+
+```
+
+```{r testmilspendA-hint-1}
+print(prop.table(table(anes$spendmilA,anes$gender), 2), digits=2)
+#what do you notice about the variables?
+```
+
+```{r testmilspendA-hint-2}
+prop.test(table(anes$gender,anes$spendmilA))
+```
+
+###Exercise: Test using Option B
+Is there a gender difference in support for military spending if we use *anes$spendmilB*, the option which treats the variable as ordinal with DK in the middle. Use the correct bivariate test to check.
+```{r testmilspendB,exercise=TRUE}
+
+
+```
+
+```{r testmilspendB-hint-1}
+#try
+print(prop.table(table(anes$spendmilB,anes$gender), 2), digits=2)
+#what do you notice about the variables?
+```
+
+```{r testmilspendB-hint-2}
+chisq.test(anes$spendmilB,anes$gender)
+```
+
+###Exercise: Test using Option C
+Is there a gender difference in support for military spending if we use *anes$spendmilC*, the option which treats the variable as binarybcategorical with "Continue" vs "all other categories"Cut/DK". Use the correct bivariate test to check.
+
+```{r testmilspendC, exercise=TRUE}
+
+
+```
+
+```{r testmilspendC-hint-1}
+#try
+print(prop.table(table(anes$spendmilC,anes$gender), 2), digits=2)
+#what do you notice about the variables?
+```
+
+```{r testmilspendC-hint-2}
+prop.test(table(anes$gender,anes$spendmilC))
+```
+
+##Question 7-8 Military Force
+
+This series of questions asks about gender differences in attitudes towards the use of military force. The original variable, VCF0844, is reverse coded, such that "Extremely Willing" is equal to 1 on 1-5 pt scale. 
+
+```{r milforcetable, echo=TRUE}
+table(anes$VCF0844)
+table(as_label(anes$VCF0844))
+```
+
+###Exercise
+Recode VCF0844 into a new variable, milforce, that is reordered with higher numbers corresponding to higher levels of support for the use of force. Treat DK responses as missing data.
+
+```{r milforce, exercise=TRUE, exercise.lines=6}
+##recode into a new variable, with changes as needed
+
+##assign NA to the correct subset of the new variable
+
+#inspect new variable and compare
+
+```
+
+```{r milforce-hint-1}
+#5=6-1, 4=6-2
+#see RecodingFactors, Exercise 3
+```
+
+```{r milforce-hint-2}
+##recode into a new variable, with changes as needed
+anes$milforce<-6-anes$VCF0844
+##assign NA to the correct subset of the new variable
+anes$milforce[anes$VCF0844==8]<-NA
+#inspect new variable and compare
+summary(anes$milforce)
+```
+
+###Exercise: Test for Gender Difference
+Test whether there is a gender difference in attitudes towards the use of force.
+
+```{r test78, exercise=TRUE}
+
+```
+
+```{r test78-hint-1}
+#try
+print(prop.table(table(anes$milforce,anes$gender), 2), digits=2)
+##what do you notice about the variables?
+```
+
+```{r test78-hint-2}
+#t.test(anes$milforce~anes$gender)
+```
+
+
+##Question 9-12 Military Spending
+
+This series of questions asks about gender differences in attitudes towards military spending measured using a 7 point scale. 
+
+```{r spenddef}
+table(anes$VCF0843)
+table(as_label(anes$VCF0843))
+```
+
+There are lots of DK resopnses, so we have two options for dealing with DKs - omit (A) or place at midpoint (B). 
+
+###Exercise: Recode using Option A
+
+Recode VCF0843 into a new variable, *milspend7A*, and treat "DK" responses as missing data.
+
+```{r spenddefa, exercise=TRUE, exercise.lines=6}
+##recode into a new variable
+
+##assign NA to the correct subset of the new variable
+
+#inspect new variable and compare
+
+```
+
+```{r spenddefa-hint-1}
+#see RecodingFactors, Exercise 3
+```
+
+```{r spenddefa-hint-2}
+##recode into a new variable
+anes$milspend7A<-anes$VCF0843
+##assign NA to the correct subset of the new variable
+anes$milspend7A[anes$VCF0843==9]<-NA
+#inspect both variables and compare
+table(anes$milspend7a)
+```
+
+###Visualize: Option A Crosstab
+
+The prop.table output is difficult to read with so many categories, so I have included a basic back to back barplot to more easily eyeball the gender differences.
+
+```{r milspend7a, echo=TRUE}
+results<-prop.table(table(anes$milspend7A,anes$gender), 2)
+rownames(results)[c(1,7)]<-c("Less","More")
+print(results, digits=2)
+barplot(results[,2], col="red" , horiz=TRUE, space=0, ylab="Support for Spending",xlim=c(-.5,.5),las=2)
+barplot(-results[,1], col="blue", horiz=TRUE, space=0, add=TRUE, axes=FALSE, las=2)
+legend(.15,7,legend=c("Female","Male"),fill=c("red","blue"), cex=.8,bty="n")
+```
+
+###Exercise: Test Option A
+Test whether there is a gender difference in attitudes towards the use of force, using milspend7A.
+
+```{r mil7atest, exercise=TRUE}
+
+```
+
+```{r mil7atest-hint-1}
+##Variables with 7 response categories are usually treated as interval
+```
+
+```{r mil7atest-hint-2}
+t.test(anes$milspend7A~anes$gender)
+```
+
+###Exercise: Recode using Option B
+
+Recode VCF0843 into a new variable, *milspend7B*, and place "DK" responses at the midpoint of the scale.
+```{r spenddefb, exercise=TRUE}
+
+```
+
+```{r spenddefb-hint-1}
+#create the new variable findRestart
+#then assign the value 4 to a subset of the cases
+```
+
+```{r spenddefb-hint-2}
+anes$milspend7B<-anes$VCF0843
+anes$milspend7B[anes$VCF0843==9]<-4
+```
+
+###Visualize: Option B Crosstab
+
+Another visual inspection of the variable.
+
+```{r milspend7b}
+results<-prop.table(table(anes$milspend7B,anes$gender), 2)
+rownames(results)[c(1,7)]<-c("Less","More")
+print(results, digits=2)
+barplot(results[,2], col="red" , horiz=TRUE, space=0, ylab="Support for Spending",xlim=c(-.5,.5), las=2)
+barplot(-results[,1], col="blue", horiz=TRUE, space=0, add=TRUE, axes=FALSE,las=2)
+legend(.15,7,legend=c("Female","Male"),fill=c("red","blue"), cex=.8,bty="n")
+```
+
+###Exercise: Test Option B
+
+Test whether there is a gender difference in attitudes towards the use of force, using milspend7A.
+
+```{r mil7btest, exercise=TRUE}
+
+```
+
+```{r mil7btest-hint-1}
+##Variables with 7 response categories are usually treated as interval
+```
+
+```{r mil7btest-hint-2}
+t.test(anes$milspend7B~anes$gender)
+```
+
+##Ideology Questions 13-23
+
+Inspect the ideology thermometer, *VCF0801*, using the commands *summary* and *hist*.
+
+###Exercise: Ideology Description
+```{r ideol, exercise=TRUE}
+
+```
+
+```{r ideol-hint-1}
+#summary(...) 
+#hist(...)
+```
+
+```{r ideol-hint-2}
+summary(anes$VCF0801) 
+hist(anes$VCF0801)
+```
+
+##Party ID
+
+The variable *VCF0301* records the respondents self-reported ID, collected using the branched question (see codebook).
+
+```{r party}
+table(anes$VCF0301)
+table(as_label(anes$VCF0301))
+```
+
+There are two distinct ways we might consider whether or not ideology scale scores are affected by party identification. We could look at party ID as an interval level variable (Option A), nominal level variable (Option B), or compare Democrats to non-Democrats/Republicans to non-Republicans (Option C).
+
+###Exercise: Recode PartyID as a 7pt scale (Option A)
+
+Recode the party identification variable as a 7 pt. interval level numeric variable, omitting DKs.
+```{r party7, exercise=TRUE, exercise.lines=6}
+##recode into a new variable
+
+##assign NA to the correct subset of the new variable
+
+#inspect new variable and compare
+
+```
+
+```{r party7-hint-1}
+#see Recoding Factors, Exercise 3
+```
+
+```{r party7-hint-2}
+##recode into a new variable
+anes$party7<-anes$VCF0301
+##assign NA to the correct subset of the new variable
+anes$party7[anes$VCF0301==9]<-NA
+#inspect new variable and compare
+table(anes$party7)
+```
+
+###Exercise: Recode PartyID as a Ordinal Factor (Option B)
+
+To treat party7 as an ordinal level variable, we need to recode it into a factor. The easiest way to do this is to work with the newly created party7 variable and assign a vector of value labels.
+
+```{r party7f, exercise=TRUE, exercise.lines=4}
+##Recode into new factor variable with labels
+
+#inspect variable and compare
+
+```
+
+```{r party7f-hint-1}
+#check the codebook for value labels
+#or try the following
+table(as_label(anes$VCF0301))
+```
+
+```{r party7f-hint-2}
+#see RecodingFactors tutorial, Exercise 2
+```
+
+```{r party7f-hint-3} 
+##Recode into new factor variable with labels
+anes$party7f<-factor(anes$party7,labels=c("Strong Democrat", "Weak Democrat", "Lean Democrat", "Independent", "Lean Republican", "Weak Republican", "Strong Republican"))
+#inspect variable and compare
+table(anes$party7f)
+```
+
+###Exercise: Recode into Binary Variable (Options C)
+
+Now use VCF0301 to create a logical variable, *dem*, distinguishing Democrats from non-Democrats.
+
+```{r dem, exercise=TRUE, exercise.lines=4}
+#recode using logical test
+
+#inspect new variable and compare
+
+```
+
+```{r dem-hint-1}
+#see Recoding Factors, Exercise 6
+```
+
+```{r dem-hint-2}
+#recode using logical test
+anes$dem<-anes$VCF0301%in%c(1:3)
+#inspect new variable and compare
+table(anes$dem)
+```
+
+Create another logical variable, *rep*, to distinguish republicans from non-republicans.
+```{r rep, exercise=TRUE, exercise.lines=4}
+#recode using logical test
+
+#inspect new variable and compare
+
+```
+
+```{r rep-solution}
+#recode using logical test
+anes$rep<-anes$VCF0301%in%c(5:7)
+#inspect new variable and compare
+table(anes$rep)
+```
+
+##Bivariate relationship between PartyID and Ideology
+
+There are three distinct approaches we can take to exploring this relationship, depending on whether we treat Party ID as interval, ordinal or nominal (based on recodes above).
+
+###Correlation
+
+Investigate the relationship between partyid and ideology by calculating the correlation between the two. 
+
+```{r partyIdeolint, exercise=TRUE}
+
+```
+
+```{r partyIdeolint-hint-1}
+#hint: see BivariateTest, Section 5
+#hint: use two numeric variables
+#hint: remember to include option for missing data
+```
+
+```{r partyIdeolint-hint-2}
+cor(anes$VCF0801,anes$party7,use="pairwise.complete.obs")
+```
+
+###Categorical group means
+Calculate the group means of ideology for each level of partyid. Conduct the related statistical tests: anova and regression.
+
+```{r partyIdeolord, exercise=TRUE, exercise.lines=6}
+#calculate group means 
+
+#regression model
+
+#anova model
+
+```
+
+```{r partyIdeolord-hint-1}
+#See Bivariate Test, Section 4
+#Be sure to use one factor variable and one numeric
+#Be sure to include option for missing data
+```
+
+```{r partyIdeolord-hint-2}
+#calculate group means 
+tapply(anes$VCF0801,anes$party7f,function(x) mean(x, na.rm=TRUE))
+#regression model
+summary(lm(anes$VCF0801~anes$party7f))
+#anova model
+anova(lm(anes$VCF0801~anes$party7f))
+```
+
+###T-test
+Use a t-test to compare the average ideology score of Democrats to the score of non-Democrats, and repeat for Republicans vs non-Republicans.
+```{r partyIdeolbin, exercise=TRUE}
+#diff between democrats and non-democrats
+
+#diff betwen republicans and non-republicans
+
+```
+
+```{r partyIdeolbin-hint-1}
+#See Bivariate Tests, Section 1
+```
+
+```{r partyIdeolbin-hint-2}
+#diff between democrats and non-democrats
+t.test(anes$VCF0801~anes$dem)
+#diff betwen republicans and non-republicans
+t.test(anes$VCF0801~anes$rep)
+```
+
+##Ideology and Age
+
+The variable *VCF0101* in the *anes* dataset records the respondent's age, in years. As you can see from the following results, *age* is a numeric variable.
+```{r age, echo=TRUE}
+anes$age<-anes$VCF0101
+summary(anes$age)
+```
+
+###Visualization: Ideology and Age
+To visualize the bivariate relationship between age and ideology, we can use a scatterplot as both variables are continuous. But the plot gets very crowded. So this plot uses the jitter command with only one year of data.
+```{r plotage, echo=TRUE}
+#create a temporary dataset with only cases from 2000 election
+temp<-anes[anes$VCF0004==2000,]
+#create a scatterplot of temp
+plot(temp$VCF0801~temp$age)
+#using jitter makes data easier to read
+plot(jitter(temp$VCF0801,10)~jitter(temp$age,10))
+#adding axis labels makes the plot look much nicer
+plot(jitter(temp$VCF0801,10)~jitter(temp$age,10), xlab="Respondent Age", ylab = "Ideology Thermometer", main="Scatterplot of Age vs. Ideology Thermometer")
+```
+
+###Test: Ideology and Age
+
+Investiage the relationship between the two ratio or continuous variables, ideology thermometer and age. 
+```{r ageideol, exercise=TRUE, exercise.lines=4}
+#calculate the correlation coefficient
+
+#summarize the linear model
+
+```
+
+```{r ageideol-hint-1}
+##See Bivariate Test, Section 5
+##Remember to account for NA values
+```
+
+```{r ageideol-hint-2}
+#calculate the correlation coefficient
+cor(anes$VCF0801,anes$age, use="pairwise.complete.obs")
+#summarize the linear model
+summary(lm(VCF0801~age, data=anes))
+```
+
+The regression model below allows for a possible non-linear (quadratic) relationship between age and ideology. *Note* Instead of computing the quadratic term of age and creating a new explicit variable (i.e., *anes$agesq<-anes$age^2*), I include the quadratic term explicitly in the regression model by using the *I()* or *AsIs* function.
+```{r age2ideol, echo=TRUE}
+summary(lm(anes$VCF0801~anes$age+I(anes$age^2)))
+```
+
+
+

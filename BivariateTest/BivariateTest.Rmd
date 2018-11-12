@@ -1,0 +1,252 @@
+---
+title: "Tutorial: Tests of Bivariate Association"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE ,message=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = FALSE)
+library(sjlabelled)
+library(datasets)
+load("anes.rda")
+tutorial_options(exercise.timelimit = 10)
+```
+
+##Introducing Bivariate tests
+This tutorial introduces different bivariate descriptions and tests that can be used to explore the relationship between two variables. The choice of data description and statistical test depends on the characteristics and level of the two variables involved.
+
+##1. t-test
+A *t-test* can be used to test for a difference in mean between groups. A *t-test* is a good test when you have one binary variable that divides your subjects up into groups (e.g., boys and girls), and one interval or ratio variable that can be used to calculate an arithmetic mean. Here is a short example.
+
+```{r ttest, echo=TRUE}
+#group: IV - which of 2 drug treatments was received
+#extra: DV - additional hours of sleep after treatment
+#conduct t.test(DV~IV, data)
+t.test(extra ~ group, data = sleep)
+```
+
+```{r quiz1}
+quiz(
+  question("Does drug 2 cause subjects to sleep more than drug 1?",
+    answer("No"),
+    answer("Yes, but the difference is just short of standard statistical significance", correct=TRUE),
+    answer("Yes, and the difference is stasticially signficant"),
+    answer("Can't tell")
+  )
+)
+```
+
+###Exercise 1: t-test
+Using the *anes* dataset, see whether there is a difference in the mean age, *age*, of male and female respondents, *gender*.
+```{r ttEx, exercise=TRUE}
+#conduct t.test(DV~IV, data)
+
+```
+
+```{r ttEx-solution}
+#conduct t.test(DV~IV, data)
+t.test(age~gender, data=anes)
+```
+
+##2. chi-squared test
+A *chi-squared test* is used to test for differences in the conditional distribution of one variable on another. It is used when both variables are categorical (or ordinal), and each has a fairly small number of categories. It is a good idea to visually inspect the cross-tab to identify which categories have deviations from expected values, in addition to looking at results of the statistical test.
+
+```{r chisq, echo=TRUE}
+#induced: IV number of prior induced abortions (0,1, 2+)
+#case: DV is the subject infertile (1=yes, 0=no)
+
+#inspect cross-tab: table
+table(infert$induced,infert$case)
+#inspect cross-tab with column proportions
+prop.table(table(infert$induced,infert$case), 2)
+#print the same table, but more attractive
+print(prop.table(table(infert$induced,infert$case), 2), digits=2)
+#calculate chisq.test
+chisq.test(infert$induced,infert$case)
+```
+
+```{r quiz2}
+quiz(
+  question("Does a women's (in)fertility conditionally depend on the number of planned abortions she has had in the past?",
+    answer("No", correct=TRUE),
+    answer("Yes, but the difference is just short of standard statistical significance"),
+    answer("Yes, and the difference is stasticially signficant"),
+    answer("Can't tell")
+  )
+)
+```
+
+###Condensed chi-sq example
+Here is the condensed version of chi-squared test code, using a different independent variable in the fertility date: number of spontaneous abortions (0,1,2+). Note that this time the cross-tab appears to indicate different rates of fertility issues conditional on number of spontaneous abortions, and we therefore expect (and get) the chi-square test to be significiant.
+
+```{r chisq2, echo=TRUE}
+#inspect crosstab
+print(prop.table(table(infert$spontaneous,infert$case), 2), digits=2)
+#calculate chisq.test
+chisq.test(infert$spontaneous,infert$case)
+```
+
+###Exercise 2: chi-sq test
+Using the *anes* dataset, analyze whether there is a difference in male and female levels of political interest, *polint*.
+```{r chisqEx, exercise=TRUE, exercise.lines=4}
+#inspect crosstab
+
+#calculate chisq.test
+
+```
+
+```{r chisqEx-solution}
+#inspect crosstab
+print(prop.table(table(anes$polint,anes$gender), 2), digits=2)
+#calculate chisq.test
+chisq.test(anes$gender,anes$polint)
+```
+
+##3. Compare proportions in 2 groups
+The *prop.test* function is used to compare proportions in two groups, and is thus used when both variables are binary or two categories. **Note**: the dependent variable appears SECOND in the table given to *prop.test*.
+
+```{r proptest, echo=TRUE}
+#eruptions: length of Old Faithful eruption (minutes)
+#waiting: waiting time to next eruption (minutes)
+
+#create binary variables based on a median split
+long.erupt<-faithful$eruptions>median(faithful$eruptions)
+long.wait<-faithful$waiting>median(faithful$waiting)
+
+#inspect crosstab(DV,IV)
+print(prop.table(table(long.wait,long.erupt),2), digits=2)
+#conduct prop.test on crosstab(IV,DV)
+prop.test(table(long.erupt,long.wait))
+```
+
+```{r quiz3}
+quiz(
+  question("Are longer than normal eruptions at Old Faithful more likely to be followed by a longer than normal wait until the next eruption?",
+    answer("No"),
+    answer("Yes, but the difference is just short of standard statistical significance"),
+    answer("Yes, and the difference is stasticially signficant", correct=TRUE),
+    answer("Can't tell")
+  )
+)
+```
+
+###Exercise 3: compare 2 proportions
+Using the *anes* dataset, see whether there is a difference in male and female levels of partisan interest, *partint*.
+```{r propEx, exercise=TRUE, exercise.lines=4}
+#inspect crosstab(DV,IV)
+
+#conduct prop.test on crosstab(IV,DV)
+
+```
+
+```{r propEx-solution}
+#inspect crosstab(DV,IV)
+print(prop.table(table(anes$partint,anes$gender), 2), digits=2)
+#conduct prop.test on crosstab(IV,DV)
+prop.test(table(anes$gender,anes$partint))
+```
+
+##4. Categorical Means, Anova and Regression
+
+A *categorical mean* or *group mean* is useful to calculate when one variable is interval/ratio, and the other variable is either nominal/categorical or ordinal (and more rarely, interval). In R, this typically means using a factor variable. This is useful when we have a treatment with more than two conditions. The R command *tapply* can be used to easily calculate categorical group means.
+
+```{r groupmean, echo=TRUE}
+table(chickwts$feed)
+#calculate group means of DV for categorical IV
+tapply(chickwts$weight,chickwts$feed,mean)
+```
+*NOTE* If you have any missing values in your data, the option "mean" will need to be replaced by *function(x) mean(x, na.rm=TRUE)* in order to correctly calculate categorical means.
+
+Just like a *t*-test tests for differences in the means of two groups, *anova* tests for differences in between the means of two or more groups (i.e., the categorical means calculated above.) Unlike a t-test, you must pass a bivariate linear model using *lm* to the R function *anova*.
+
+```{r anova, echo=TRUE}
+#calculate anova using bivariate regression lm(DV~catIV)
+anova(lm(chickwts$weight~chickwts$feed))
+```
+
+Note that the R syntax makes it clear that an anova is actually a joint test of significance for the underlying regression model. Inspecting this model allows us to assess which groups appear to be different from each other, although including categorical variables in regressions is tricky as the significance of any single factor level depends on which level is treated as the *baseline* or *omitted category*. Anova is usually a good sanity check for any regression model including any factor variable  as it isn't sensitive to the choice of baseline category.
+
+```{r catreg, echo=TRUE}
+#estimate bivariate regression lm(DV~catIV)
+summary(lm(chickwts$weight~chickwts$feed))
+```
+
+```{r quiz4}
+quiz(
+  question("Does chicken weight-gain depend on what food they are given?",
+    answer("No"),
+    answer("Yes, and casein and sunflower are significantly better than the other 4 foods"),
+    answer("Yes, and casein and sunflower are significantly better than the other 3 foods, but not necessarily better than meatmeal", correct=TRUE),
+    answer("Can't tell")
+  )
+)
+```
+
+###Exercise 4
+
+Are people who follow public affairs older than those who are not interested? Investige this claim using the *age* and *pubint* variables in the *anes* dataset, using all three techniques above: categorical group means, anova, and bivariate regression.
+
+```{r catEx, exercise=TRUE, exercise.lines=6}
+#calculate group means of DV for categorical IV
+
+#calculate anova using bivariate regression lm(DV~catIV)
+
+#estimate bivariate regression lm(DV~catIV)
+
+```
+
+```{r catEx-solution}
+#calculate group means of DV for categorical IV
+tapply(anes$age,anes$pubint,function(x) mean(x, na.rm=TRUE))
+#calculate anova using bivariate regression lm(DV~catIV)
+anova(lm(anes$age~anes$pubint))
+#estimate bivariate regression lm(DV~catIV)
+summary(lm(anes$age~anes$pubint))
+```
+
+##5. Correlation and Regression
+
+A *correlation* between two variables is calculated when both variables are interval/ratio varibles. In general, correlations of over 0.20 are noteworthy in survey research, and even smaller correlations may be substantively and statistically signficiant when working with individual level data that is typically quite noisy. A **bivariate linear model** can be used to check for the statistical signficance of a relationship between two interval/ratio variables.
+
+```{r corr, echo=TRUE}
+#speed: speed of car
+#dist: stopping distince of car (in feet)
+
+#calculate the correlation coefficient
+cor(cars$speed,cars$dist)
+#estimate the bivariate linear model lm(DV~IV)
+summary(lm(dist~speed, data=cars))
+```
+**Note** If there are any missing values in one or both variables, include the "use=parwise.complete.obs" option in the *cor* command.
+
+```{r quiz5}
+quiz(
+  question("Does stopping distance depend on how fast the car is going?",
+    answer("No"),
+    answer("Yes, but the difference is just short of standard statistical significance"),
+    answer("Yes, and the difference is stasticially signficant", correct=TRUE),
+    answer("Can't tell")
+  )
+)
+```
+
+###Exercise 5
+
+Do older people have fewer young children under 18 living in their household? Investige this claim using the *age* and *kids* variables in the *anes* dataset, using both techniques describe above: correlation and bivariate regression.
+
+```{r corEx, exercise=TRUE, exercise.lines=4}
+#calculate the correlation coefficient
+
+#estimate the bivariate linear model lm(DV~IV)
+
+```
+
+```{r corEx-solution}
+#calculate the correlation coefficient
+cor(anes$age,anes$kids, use="pairwise.complete.obs")
+#estimate the bivariate linear model lm(DV~IV)
+summary(lm(kids~age,data=anes))
+#bonus - check for a quadratic relationship
+summary(lm(anes$kids~anes$age+I(anes$age^2)))
+```
